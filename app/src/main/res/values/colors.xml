@@ -1,5 +1,54 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Basic Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Colors -->
+    <color name="primaryColor">#6200EE</color>
+    <color name="primaryLightColor">#BB86FC</color>
+    <color name="primaryDarkColor">#3700B3</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondaryColor">#03DAC5</color>
+    <color name="secondaryLightColor">#66FFF8</color>
+    <color name="secondaryDarkColor">#00A89D</color>
+
+    <!-- Shades of Gray -->
+    <color name="gray50">#FAFAFA</color>
+    <color name="gray100">#F5F5F5</color>
+    <color name="gray200">#EEEEEE</color>
+    <color name="gray300">#E0E0E0</color>
+    <color name="gray400">#BDBDBD</color>
+    <color name="gray500">#9E9E9E</color>
+    <color name="gray600">#757575</color>
+    <color name="gray700">#616161</color>
+    <color name="gray800">#424242</color>
+    <color name="gray900">#212121</color>
+
+    <!-- Pastel Colors -->
+    <color name="pastelPink">#FFD1DC</color>
+    <color name="pastelYellow">#FFF9C4</color>
+    <color name="pastelGreen">#DCEDC8</color>
+    <color name="pastelBlue">#BBDEFB</color>
+    <color name="pastelPurple">#E1BEE7</color>
+
+    <!-- Bright Colors -->
+    <color name="brightRed">#FF5252</color>
+    <color name="brightOrange">#FFAB40</color>
+    <color name="brightYellow">#FFEB3B</color>
+    <color name="brightGreen">#69F0AE</color>
+    <color name="brightBlue">#448AFF</color>
+    <color name="brightPurple">#7C4DFF</color>
+
+    <!-- Earth Tones -->
+    <color name="earthBrown">#8D6E63</color>
+    <color name="earthGreen">#A5D6A7</color>
+    <color name="earthBlue">#4FC3F7</color>
+    <color name="earthGray">#B0BEC5</color>
+
+    <!-- Text Colors -->
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
+    <color name="textHint">#BDBDBD</color>
+    <color name="textAccent">#FF5252</color>
 </resources>
