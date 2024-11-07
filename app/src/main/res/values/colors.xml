@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#FFFFFF</color> <!-- Primary color -->
+    <color name="black">#0D1117</color> <!-- Dark background -->
+    <color name="white">#C9D1D9</color> <!-- Light text color -->
+    <color name="gray">#161B22</color>  <!-- Secondary background for surfaces -->
+    <color name="gray200">#30363D</color> <!-- Darker gray for cards or elevated surfaces -->
+    <color name="blue">#58A6FF</color> <!-- Accent color similar to GitHub links -->
+    <color name="red">#FF7B72</color> <!-- Error color or delete actions -->
+    <color name="green">#3FB950</color> <!-- Success color -->
+</resources>
