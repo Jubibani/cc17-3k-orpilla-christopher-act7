@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId "com.google.ar.core.examples.kotlin.helloar"
         minSdk 24
-        targetSdk 35
+        targetSdk 34
         versionCode 1
         versionName '1.0'
     }
@@ -18,13 +18,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
     }
 
     kotlinOptions {
@@ -36,51 +29,30 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.7"
+        kotlinCompilerExtensionVersion = "1.5.4"
     }
 }
 
 dependencies {
-    implementation 'com.google.ar:core:1.46.0'
     implementation 'de.javagl:obj:0.4.0'
-
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-
-    implementation "androidx.compose.material:material-icons-extended:1.6.0-alpha02"
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'androidx.lifecycle:lifecycle-common-java8:2.6.2'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation "androidx.compose.material:material-icons-extended:1.5.4"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.20"
     implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
-
-    // SceneView dependencies
-    implementation 'com.github.SceneView:sceneform:1.21.0'
-    implementation 'com.github.SceneView:arcore:1.21.0'
-
-    // ARCore
-    implementation 'com.google.ar:core:1.46.0'
-    implementation 'com.google.ar:core:1.46.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.core:core-ktx:1.15.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+    implementation 'com.google.ar:core:1.40.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
 
     // Jetpack Compose
-    def compose_version = "1.4.3"
+    def compose_version = "1.5.4"
     implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material3:material3:1.1.1"
+    implementation "androidx.compose.material3:material3:1.1.2"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-
-    implementation 'androidx.activity:activity-compose:1.7.2'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
-    implementation 'androidx.core:core-ktx:1.10.1'
-
-    // Navigation Compose
-    implementation "androidx.navigation:navigation-compose:2.6.0"
-
-    // ViewModel Compose
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1"
+    implementation 'androidx.activity:activity-compose:1.8.1'
+    implementation "androidx.navigation:navigation-compose:2.7.5"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2"
 
     // Coil for image loading
     implementation "io.coil-kt:coil-compose:2.4.0"
@@ -89,7 +61,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
-    debugImplementation "androidx.compose.ui:ui-tooling"
-    debugImplementation "androidx.compose.ui:ui-test-manifest"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 }
