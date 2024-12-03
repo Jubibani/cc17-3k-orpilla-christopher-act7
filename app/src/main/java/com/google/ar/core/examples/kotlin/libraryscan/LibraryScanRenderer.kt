@@ -7,20 +7,31 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.Frame
 import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
+import com.google.ar.core.examples.java.common.samplerender.SampleRender
 import com.google.ar.sceneform.rendering.ModelRenderable
 
 class LibraryScanRenderer(
     private val activity: LibraryScanActivity
-) : DefaultLifecycleObserver {
+) : SampleRender.Renderer, DefaultLifecycleObserver { // Implement DefaultLifecycleObserver
 
-    var selectedModelPath: String? = null
+    var selectedModelPath: String? = null // Path for the selected model
 
-    fun onDrawFrame(render: com.google.ar.core.examples.java.common.samplerender.SampleRender) {
+    override fun onSurfaceCreated(render: SampleRender) {
+        Log.d(TAG, "Surface created")
+        // You can initialize rendering resources here if needed
+    }
+
+    override fun onSurfaceChanged(render: SampleRender, width: Int, height: Int) {
+        Log.d(TAG, "Surface changed: width=$width, height=$height")
+        // Handle changes to the rendering surface (e.g., screen rotation)
+    }
+
+    override fun onDrawFrame(render: SampleRender) {
         val session = activity.arCoreSessionHelper.session ?: return
         val frame = session.update()
         val camera = frame.camera
 
-        // Handle user tap to place model
+        // Handle taps for placing models
         handleTap(frame)
     }
 
@@ -34,7 +45,12 @@ class LibraryScanRenderer(
             trackable is Plane && trackable.isPoseInPolygon(hit.hitPose)
         } ?: return
 
-        val modelPath = selectedModelPath ?: return
+        val modelPath = selectedModelPath ?: run {
+            Log.e(TAG, "No model path provided!")
+            return
+        }
+
+        // Load and render the model
         ModelRenderable.builder()
             .setSource(activity, Uri.parse(modelPath))
             .build()
@@ -45,9 +61,21 @@ class LibraryScanRenderer(
                 }
                 activity.view.scene.addChild(anchorNode)
             }
-            .exceptionally {
-                Log.e("LibraryScanRenderer", "Error loading model: ${it.localizedMessage}")
+            .exceptionally { throwable ->
+                Log.e(TAG, "Error loading model: ${throwable.localizedMessage}")
                 null
             }
+    }
+
+    override fun onResume(owner: LifecycleOwner) {
+        Log.d(TAG, "Renderer resumed")
+    }
+
+    override fun onPause(owner: LifecycleOwner) {
+        Log.d(TAG, "Renderer paused")
+    }
+
+    companion object {
+        private const val TAG = "LibraryScanRenderer"
     }
 }

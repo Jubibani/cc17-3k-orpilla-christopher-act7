@@ -9,6 +9,7 @@ import com.google.ar.core.Session
 import com.google.ar.core.examples.kotlin.common.helpers.ARCoreSessionLifecycleHelper
 
 class LibraryScanActivity : AppCompatActivity() {
+
     companion object {
         private const val TAG = "LibraryScanActivity"
     }
@@ -20,27 +21,30 @@ class LibraryScanActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Get selected model path from Intent
-        val modelPath: String = intent.getStringExtra("modelPath") ?: run {
-            Log.e(TAG, "No model path provided!")
+        // Get the model path from the intent
+        val modelPath = intent.getStringExtra("modelPath") ?: run {
+            Log.e(TAG, "Model path not provided!")
             Toast.makeText(this, "No model selected!", Toast.LENGTH_LONG).show()
             finish()
             return
         }
 
         // Setup ARCore session lifecycle helper
-        arCoreSessionHelper = ARCoreSessionLifecycleHelper(this).apply {
-            beforeSessionResume = ::configureSession
+        arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)
+        arCoreSessionHelper.exceptionCallback = { exception ->
+            Log.e(TAG, "ARCore exception: ${exception.localizedMessage}")
+            Toast.makeText(this, "ARCore error: ${exception.localizedMessage}", Toast.LENGTH_LONG).show()
         }
+        arCoreSessionHelper.beforeSessionResume = ::configureSession
         lifecycle.addObserver(arCoreSessionHelper)
 
-        // Setup renderer and pass selected model path
+        // Set up AR rendering
         renderer = LibraryScanRenderer(this).apply {
             selectedModelPath = modelPath
         }
         lifecycle.addObserver(renderer)
 
-        // Setup AR view
+        // Set up the AR view
         view = LibraryScanArView(this)
         lifecycle.addObserver(view)
 
@@ -48,9 +52,11 @@ class LibraryScanActivity : AppCompatActivity() {
     }
 
     private fun configureSession(session: Session) {
-        session.configure(session.config.apply {
-            lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
-            depthMode = Config.DepthMode.AUTOMATIC
-        })
+        session.configure(
+            session.config.apply {
+                lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
+                depthMode = Config.DepthMode.AUTOMATIC
+            }
+        )
     }
 }
