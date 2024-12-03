@@ -54,6 +54,7 @@ class HelloArActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+
     // Setup ARCore session lifecycle helper and configuration.
     arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)
     // If Session creation or Session.resume() fails, display a message and log detailed
@@ -92,6 +93,8 @@ class HelloArActivity : AppCompatActivity() {
 
     depthSettings.onCreate(this)
     instantPlacementSettings.onCreate(this)
+
+
   }
 
   // Configure the session, using Lighting Estimation, and Depth mode.

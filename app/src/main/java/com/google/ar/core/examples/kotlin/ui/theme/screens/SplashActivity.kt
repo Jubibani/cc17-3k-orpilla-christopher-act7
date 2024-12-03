@@ -36,6 +36,8 @@ class SplashActivity : ComponentActivity() {
                 visible = false
                 startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                finish()
+                delay(2000)
             }
 
             Box(

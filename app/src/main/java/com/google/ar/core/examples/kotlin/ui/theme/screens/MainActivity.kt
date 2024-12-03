@@ -61,14 +61,14 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
 
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "")
     val color1 by infiniteTransition.animateColor(
         initialValue = Color(0xFF0D1B2A),
         targetValue = Color(0xFF1B263B),
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 5000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
-        )
+        ), label = ""
     )
     val color2 by infiniteTransition.animateColor(
         initialValue = Color(0xFF1B263B),
@@ -76,7 +76,7 @@ fun MainScreen(
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 8000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
-        )
+        ), label = ""
     )
     val color3 by infiniteTransition.animateColor(
         initialValue = Color(0xFF415A77),
@@ -84,7 +84,7 @@ fun MainScreen(
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 4000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
-        )
+        ), label = ""
     )
 
     Box(
@@ -124,13 +124,24 @@ fun MainScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
             AnimatedMaterialIconButton(
                 text = "Practice",
                 icon = Icons.Filled.School,
                 onClick = {
                     // Handle Practice button click
+                }
+            )
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            AnimatedMaterialIconButton(
+                text = "Library",
+                icon = Icons.Filled.LibraryBooks,
+                onClick = {
+                    val intent = Intent(context, LibraryActivity::class.java)
+                    context.startActivity(intent)
                 }
             )
         }

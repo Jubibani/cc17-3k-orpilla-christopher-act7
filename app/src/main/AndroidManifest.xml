@@ -66,5 +66,12 @@
         android:name="com.google.ar.core.examples.kotlin.helloar.HelloArActivity"
         android:exported="true"
         android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+    <!--Library-->
+    <activity
+        android:name="com.google.ar.core.examples.kotlin.ui.theme.screens.LibraryActivity"
+        android:exported="true"
+        android:theme="@style/Theme.AppCompat.NoActionBar" />
+
   </application>
 </manifest>

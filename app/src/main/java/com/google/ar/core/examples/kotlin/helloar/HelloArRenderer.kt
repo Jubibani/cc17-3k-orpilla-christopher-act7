@@ -145,6 +145,8 @@ class HelloArRenderer(val activity: HelloArActivity) :
   }
 
   override fun onSurfaceCreated(render: SampleRender) {
+
+
     // Prepare the rendering objects.
     // This involves reading shaders and 3D model files, so may throw an IOException.
     try {
