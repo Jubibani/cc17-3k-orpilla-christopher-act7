@@ -2,6 +2,7 @@ package com.google.ar.core.examples.kotlin.ui.theme.screens
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.augment_ed.ui.theme.AugmentEDTheme
 import com.google.ar.core.examples.kotlin.libraryscan.LibraryScanActivity
+import kotlin.math.log
 
 class LibraryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +55,7 @@ fun ModelItem(modelName: String, modelPath: String) {
             // Navigate to LibraryScanActivity with the selected model's path
             val intent = Intent(context, LibraryScanActivity::class.java).apply {
                 putExtra("modelPath", modelPath) // Pass model path as an Intent extra
+                Log.d("LibraryScanActivity", "Received model path: $modelPath")
             }
             context.startActivity(intent)
         },

@@ -43,23 +43,35 @@ class LibraryScanRenderer(
         val hitResult = frame.hitTest(tap).firstOrNull { hit ->
             val trackable = hit.trackable
             trackable is Plane && trackable.isPoseInPolygon(hit.hitPose)
-        } ?: return
+        } ?: run {
+            Log.e(TAG, "No valid hit detected")
+            return
+        }
 
         val modelPath = selectedModelPath ?: run {
             Log.e(TAG, "No model path provided!")
             return
         }
 
-        // Load and render the model
+        Log.d(TAG, "Loading model: $modelPath")
+
+        // Load and render the selected model
         ModelRenderable.builder()
-            .setSource(activity, Uri.parse(modelPath))
+            .setSource(activity, Uri.parse(modelPath)) // Load model from assets
             .build()
             .thenAccept { renderable ->
+                // Create an anchor at the hit location
                 val anchor = hitResult.createAnchor()
+
+                // Create an AnchorNode to hold the renderable
                 val anchorNode = com.google.ar.sceneform.AnchorNode(anchor).apply {
-                    this.renderable = renderable
+                    this.renderable = renderable // Set the renderable model
                 }
+
+                // Add the anchor node to the AR scene
                 activity.view.scene.addChild(anchorNode)
+
+                Log.d(TAG, "Model rendered successfully at anchor: $anchor")
             }
             .exceptionally { throwable ->
                 Log.e(TAG, "Error loading model: ${throwable.localizedMessage}")
