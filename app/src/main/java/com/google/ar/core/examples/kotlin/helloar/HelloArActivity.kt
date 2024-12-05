@@ -17,6 +17,8 @@ package com.google.ar.core.examples.kotlin.helloar
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.ar.core.Config
@@ -54,7 +56,8 @@ class HelloArActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-
+    // Initialize the renderer and pass 'this' as the activity
+    renderer = HelloArRenderer(this)
     // Setup ARCore session lifecycle helper and configuration.
     arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)
     // If Session creation or Session.resume() fails, display a message and log detailed
@@ -97,6 +100,34 @@ class HelloArActivity : AppCompatActivity() {
 
   }
 
+  //for Text Recognition
+  private fun handleRecognizeText(text: String) {
+    runOnUiThread{
+      Toast.makeText(this, "Recognized: $text", Toast.LENGTH_SHORT).show()
+    }
+
+  }
+
+  /**
+   * Handle the recognized text and update the UI.
+   */
+  private var lastToastTime = 0L
+
+  fun handleRecognizedText(text: String) {
+    val currentTime = System.currentTimeMillis()
+    if (currentTime - lastToastTime > 2000) { // Debounce interval: 2 seconds
+      lastToastTime = currentTime
+      runOnUiThread {
+        val textView = findViewById<TextView>(R.id.recognizedTextView)
+        textView.text = text
+        textView.visibility = View.VISIBLE
+
+        // Hide the TextView after 2 seconds
+        textView.postDelayed({ textView.visibility = View.GONE }, 2000)
+      }
+    }
+  }
+
   // Configure the session, using Lighting Estimation, and Depth mode.
   fun configureSession(session: Session) {
     session.configure(
@@ -122,6 +153,8 @@ class HelloArActivity : AppCompatActivity() {
     )
   }
 
+
+
   override fun onRequestPermissionsResult(
     requestCode: Int,
     permissions: Array<String>,
@@ -144,4 +177,7 @@ class HelloArActivity : AppCompatActivity() {
     super.onWindowFocusChanged(hasFocus)
     FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus)
   }
+
+
+
 }

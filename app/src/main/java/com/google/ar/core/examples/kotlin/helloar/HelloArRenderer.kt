@@ -18,7 +18,9 @@ package com.google.ar.core.examples.kotlin.helloar
 
 import android.opengl.GLES30
 import android.opengl.Matrix
+import android.os.Build
 import android.util.Log
+import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.Anchor
@@ -49,6 +51,13 @@ import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
 import java.io.IOException
 import java.nio.ByteBuffer
+import android.view.Surface
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 /** Renders the HelloAR application using our example Renderer. */
 class HelloArRenderer(val activity: HelloArActivity) :
@@ -74,6 +83,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
     private val Z_NEAR = 0.1f
     private val Z_FAR = 100f
 
+
     // Assumed distance from the device camera to the surface on which user will try to place
     // objects.
     // This value affects the apparent scale of objects while the tracking method of the
@@ -88,6 +98,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
     val CUBEMAP_RESOLUTION = 16
     val CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES = 32
   }
+  private var lastRecognizedText = ""
 
   lateinit var render: SampleRender
   lateinit var planeRenderer: PlaneRenderer
@@ -143,6 +154,8 @@ class HelloArRenderer(val activity: HelloArActivity) :
   override fun onPause(owner: LifecycleOwner) {
     displayRotationHelper.onPause()
   }
+
+
 
   override fun onSurfaceCreated(render: SampleRender) {
 
@@ -249,12 +262,22 @@ class HelloArRenderer(val activity: HelloArActivity) :
     }
   }
 
+  var frameCounter = 0
+
   override fun onSurfaceChanged(render: SampleRender, width: Int, height: Int) {
     displayRotationHelper.onSurfaceChanged(width, height)
     virtualSceneFramebuffer.resize(width, height)
   }
 
+  @RequiresApi(Build.VERSION_CODES.R)
   override fun onDrawFrame(render: SampleRender) {
+
+    frameCounter++
+    if (frameCounter < 10) {
+      // Skip the first 10 frames to let ARCore stabilize
+      return
+    }
+
     val session = session ?: return
 
     // Texture names should only be set once on a GL thread unless they change. This is done during
@@ -284,6 +307,35 @@ class HelloArRenderer(val activity: HelloArActivity) :
       }
 
     val camera = frame.camera
+
+
+    // Attempt to acquire the camera image
+    try {
+      val image = frame.acquireCameraImage()
+      image.use { // Ensure proper resource cleanup
+        val rotationDegrees = getRotationDegrees()
+        val inputImage = InputImage.fromMediaImage(it, rotationDegrees)
+
+        // Initialize ML Kit TextRecognizer
+        val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+        textRecognizer.process(inputImage)
+          .addOnSuccessListener { visionText ->
+            // Display or log recognized text
+            val recognizedText = visionText.text
+            Log.d(TAG, "Recognized text: $recognizedText")
+            (activity as? HelloArActivity)?.handleRecognizedText(recognizedText)
+          }
+          .addOnFailureListener { e ->
+            Log.e(TAG, "Text recognition failed: ${e.localizedMessage}", e)
+            (activity as? HelloArActivity)?.handleRecognizedText("Recognition failed.")
+          }
+      }
+    } catch (e: NotYetAvailableException) {
+      Log.w(TAG, "Camera image not available yet, skipping frame")
+    } catch (e: Exception) {
+      Log.e(TAG, "Unexpected error: ${e.localizedMessage}", e)
+    }
 
     // Update BackgroundRenderer state to match the depth settings.
     try {
@@ -414,6 +466,21 @@ class HelloArRenderer(val activity: HelloArActivity) :
     backgroundRenderer.drawVirtualScene(render, virtualSceneFramebuffer, Z_NEAR, Z_FAR)
   }
 
+
+  // Helper function for rotation degrees
+  @RequiresApi(Build.VERSION_CODES.R)
+  fun getRotationDegrees(): Int {
+    val display = activity.display // Use display (API 30+)
+    val rotation = display?.rotation ?: Surface.ROTATION_0
+    return when (rotation) {
+      Surface.ROTATION_0 -> 0
+      Surface.ROTATION_90 -> 90
+      Surface.ROTATION_180 -> 180
+      Surface.ROTATION_270 -> 270
+      else -> 0
+    }
+  }
+
   /** Checks if we detected at least one plane. */
   private fun Session.hasTrackingPlane() =
     getAllTrackables(Plane::class.java).any { it.trackingState == TrackingState.TRACKING }
@@ -527,6 +594,10 @@ class HelloArRenderer(val activity: HelloArActivity) :
 
   private fun showError(errorMessage: String) =
     activity.view.snackbarHelper.showError(activity, errorMessage)
+
+  /**
+   * Handle the recognized text and update the UI.
+   */
 }
 
 /**
