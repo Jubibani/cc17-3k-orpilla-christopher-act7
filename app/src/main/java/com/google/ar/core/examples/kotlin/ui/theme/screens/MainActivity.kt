@@ -62,7 +62,9 @@ fun MainScreen(
     sensorY: Float
 ) {
     val context = LocalContext.current
+    var showTextRecognition by remember { mutableStateOf(false) } // State to toggle screens
 
+    // Background animation colors
     val infiniteTransition = rememberInfiniteTransition()
     val color1 by infiniteTransition.animateColor(
         initialValue = Color(0xFF0D1B2A), // Deep Space Blue
@@ -89,14 +91,13 @@ fun MainScreen(
         ), label = ""
     )
 
+    // Full-screen background with gradient
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(color1, color2, color3)))
     ) {
-        ParticleBackground()
-
-        rememberInfiniteTransition(label = "")
+        ParticleBackground() // Your particle background effect
 
         Column(
             modifier = Modifier
@@ -105,6 +106,7 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // App title animations
             AnimatedText(
                 text = "Augment-ED",
                 fontSize = 45,
@@ -124,41 +126,68 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            if (isArSupported) {
+            // Toggle between AR and Text Recognition screens
+            if (showTextRecognition) {
+                // Display the Text Recognition Screen
+                Box(modifier = Modifier.fillMaxSize()) {
+                    TextRecognitionScreen()
+                }
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                // Back to Main AR Menu Button
                 AnimatedMaterialIconButton(
-                    text = "Scan",
-                    icon = Icons.Filled.QrCodeScanner,
+                    text = "Back to Main Menu",
+                    icon = Icons.Filled.ArrowBack,
+                    onClick = { showTextRecognition = false } // Switch back to the main menu
+                )
+            } else {
+                // Main menu with AR and Library buttons
+                if (isArSupported) {
+                    AnimatedMaterialIconButton(
+                        text = "Scan",
+                        icon = Icons.Filled.QrCodeScanner,
+                        onClick = {
+                            // Start HelloAR activity (AR scanning)
+                            val intent = Intent(context, HelloArActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(22.dp))
+
+                AnimatedMaterialIconButton(
+                    text = "Practice",
+                    icon = Icons.Filled.School,
                     onClick = {
-                        // Start HelloAR activity (AR scanning)
-                        val intent = Intent(context, HelloArActivity::class.java)
+                        // Start a practice mode (implement or customize this later)
+                    }
+                )
+                Spacer(modifier = Modifier.height(22.dp))
+
+                AnimatedMaterialIconButton(
+                    text = "Library",
+                    icon = Icons.Filled.LibraryBooks,
+                    onClick = {
+                        val intent = Intent(context, LibraryActivity::class.java)
                         context.startActivity(intent)
                     }
                 )
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                // Button to open Text Recognition Screen
+                AnimatedMaterialIconButton(
+                    text = "Text Recognition",
+                    icon = Icons.Filled.TextFields,
+                    onClick = {
+                        showTextRecognition = true // Switch to Text Recognition Screen
+                    }
+                )
             }
-            Spacer(modifier = Modifier.height(22.dp))
-
-            AnimatedMaterialIconButton(
-                text = "Practice",
-                icon = Icons.Filled.School,
-                onClick = {
-                    // Start a practice mode (implement or customize this later)
-                }
-            )
-            Spacer(modifier = Modifier.height(22.dp))
-
-            AnimatedMaterialIconButton(
-                text = "Library",
-                icon = Icons.Filled.LibraryBooks,
-                onClick = {
-                    val intent = Intent(context, LibraryActivity::class.java)
-                    context.startActivity(intent)
-                }
-            )
         }
-        }
-
-
     }
+}
 
 @Composable
 fun ParticleBackground() {
