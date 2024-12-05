@@ -1,6 +1,5 @@
 package com.google.ar.core.examples.kotlin.ui.theme.screens
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,17 +18,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.*
 import androidx.compose.material3.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.core.content.ContextCompat.startActivity
 import com.example.augment_ed.ui.theme.AugmentEDTheme
 import com.google.ar.core.examples.kotlin.helloar.HelloArActivity
 import com.google.ar.core.examples.kotlin.helloar.R
 import kotlinx.coroutines.delay
+import kotlin.random.Random
+import androidx.compose.ui.draw.scale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,28 +63,28 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
 
-    val infiniteTransition = rememberInfiniteTransition(label = "")
+    val infiniteTransition = rememberInfiniteTransition()
     val color1 by infiniteTransition.animateColor(
-        initialValue = Color(0xFF0D1B2A),
-        targetValue = Color(0xFF1B263B),
+        initialValue = Color(0xFF0D1B2A), // Deep Space Blue
+        targetValue = Color(0xFF1B263B), // Darker Blue
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 5000, easing = LinearEasing),
+            animation = tween(durationMillis = 2000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
     val color2 by infiniteTransition.animateColor(
-        initialValue = Color(0xFF1B263B),
-        targetValue = Color(0xFF415A77),
+        initialValue = Color(0xFF1B263B), // Darker Blue
+        targetValue = Color(0xFF415A77), // Aurora Blue
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 8000, easing = LinearEasing),
+            animation = tween(durationMillis = 2000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
     val color3 by infiniteTransition.animateColor(
-        initialValue = Color(0xFF415A77),
-        targetValue = Color(0xFF778DA9),
+        initialValue = Color(0xFF415A77), // Aurora Blue
+        targetValue = Color(0xFF778DA9), // Light Aurora
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 4000, easing = LinearEasing),
+            animation = tween(durationMillis = 2000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
@@ -92,6 +94,10 @@ fun MainScreen(
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(color1, color2, color3)))
     ) {
+        ParticleBackground()
+
+        rememberInfiniteTransition(label = "")
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -99,41 +105,45 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
+            AnimatedText(
                 text = "Augment-ED",
-                fontSize = 45.sp,
+                fontSize = 45,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFFD4AF37),
-                fontFamily = MinecraftFontFamily
-            )
-            Text(
-                text = "Welcome!",
-                fontSize = 24.sp,
-                color = Color.White,
                 fontFamily = MinecraftFontFamily,
-                modifier = Modifier.padding(bottom = 32.dp)
+                startColor = Color(0xFFD4AF37),
+                endColor = Color(0xFFE5C158)
+            )
+            AnimatedText(
+                text = "Welcome!",
+                fontSize = 24,
+                fontWeight = FontWeight.Normal,
+                fontFamily = MinecraftFontFamily,
+                startColor = Color.White,
+                endColor = Color(0xFF778DA9)
             )
 
-            AnimatedMaterialIconButton(
-                text = "Scan",
-                icon = Icons.Filled.QrCodeScanner,
-                onClick = {
-                    // Trigger AR Scan
-                    val intent = Intent(context, HelloArActivity::class.java)
-                    context.startActivity(intent)
-                }
-            )
+            Spacer(modifier = Modifier.height(25.dp))
 
+            if (isArSupported) {
+                AnimatedMaterialIconButton(
+                    text = "Scan",
+                    icon = Icons.Filled.QrCodeScanner,
+                    onClick = {
+                        // Start HelloAR activity (AR scanning)
+                        val intent = Intent(context, HelloArActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                )
+            }
             Spacer(modifier = Modifier.height(22.dp))
 
             AnimatedMaterialIconButton(
                 text = "Practice",
                 icon = Icons.Filled.School,
                 onClick = {
-                    // Handle Practice button click
+                    // Start a practice mode (implement or customize this later)
                 }
             )
-
             Spacer(modifier = Modifier.height(22.dp))
 
             AnimatedMaterialIconButton(
@@ -145,8 +155,64 @@ fun MainScreen(
                 }
             )
         }
+        }
+
+
+    }
+
+@Composable
+fun ParticleBackground() {
+    val maxParticles = 500 // Limit the number of particles
+    val particles = remember { mutableStateListOf<Particle>() }
+    val random = remember { Random.Default }
+
+    // Add new particles periodically, but respect the maximum
+    LaunchedEffect(Unit) {
+        while (true) {
+            if (particles.size < maxParticles) {
+                particles.add(Particle(random))
+            }
+            delay(50L) // Adjust for particle generation frequency
+        }
+    }
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val iterator = particles.iterator()
+        while (iterator.hasNext()) {
+            val particle = iterator.next()
+            // Update particle properties
+            particle.update()
+
+            // Remove particles if they complete their lifecycle
+            if (particle.alpha <= 0f || particle.size <= 0f) {
+                iterator.remove()
+            } else {
+                // Draw the particle
+                drawCircle(
+                    color = Color.White.copy(alpha = particle.alpha),
+                    radius = particle.size,
+                    center = particle.position
+                )
+            }
+        }
     }
 }
+
+// Particle class to manage properties
+data class Particle(
+    val random: Random,
+    var position: Offset = Offset(random.nextFloat() * 1080, random.nextFloat() * 1920),
+    var alpha: Float = random.nextFloat(),
+    var size: Float = random.nextFloat() * 3f + 1f,
+    var velocity: Offset = Offset(random.nextFloat() - 0.5f, random.nextFloat() - 0.5f)
+) {
+    fun update() {
+        position += velocity
+        alpha -= 0.01f // Fade out gradually
+        size = maxOf(size - 0.05f, 0f) // Shrink size
+    }
+}
+
 
 @Composable
 fun AnimatedMaterialIconButton(
@@ -154,17 +220,88 @@ fun AnimatedMaterialIconButton(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    val containerColor by infiniteTransition.animateColor(
+        initialValue = Color(0xFFD4AF37),
+        targetValue = Color(0xFFE5C158),
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
     FilledTonalIconButton(
         onClick = onClick,
-        modifier = Modifier.size(120.dp),
+        modifier = Modifier
+            .size(120.dp)
+            .scale(scale),
         colors = IconButtonDefaults.filledTonalIconButtonColors(
-            containerColor = Color(0xFFD4AF37)
+            containerColor = containerColor
         )
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = icon, contentDescription = text, tint = Color.White)
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                tint = Color.White,
+                modifier = Modifier.size(40.dp)
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = text, color = Color.White)
+            Text(
+                text = text,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
+}
+
+@Composable
+fun AnimatedText(
+    text: String,
+    fontSize: Int,
+    fontWeight: FontWeight,
+    fontFamily: FontFamily,
+    startColor: Color,
+    endColor: Color,
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    // Animate text color
+    val animatedColor by infiniteTransition.animateColor(
+        initialValue = startColor,
+        targetValue = endColor,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    // Animate scale for pulsing effect
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Text(
+        text = text,
+        fontSize = fontSize.sp,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        color = animatedColor,
+        modifier = Modifier.scale(scale)
+    )
 }
