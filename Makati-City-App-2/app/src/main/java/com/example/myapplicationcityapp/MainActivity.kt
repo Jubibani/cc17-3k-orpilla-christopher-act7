@@ -3,6 +3,7 @@ package com.example.myapplicationcityapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,14 +13,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplicationcityapp.ui.theme.MyApplicationcityappTheme
+import androidx.compose.foundation.Image
+import androidx.compose.ui.unit.sp
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +65,17 @@ fun MainScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Makati City", fontWeight = FontWeight.Bold) },
+                title = { 
+                    Text(
+                        "Makati City",
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -70,15 +87,16 @@ fun MainScreen(navController: NavHostController) {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryList(modifier: Modifier = Modifier, navController: NavHostController) {
     val categories = listOf(
-        "Coffee Shops",
-        "Restaurants",
-        "Kid-Friendly Places",
-        "Parks",
-        "Shopping Centers"
+        Pair("Coffee Shops", R.drawable.coffeemain),
+        Pair("Restaurants", R.drawable.restuarantmain),
+        Pair("Kid-Friendly Places", R.drawable.kidfriendlymain),
+        Pair("Parks", R.drawable.parkmain),
+        Pair("Shopping Centers", R.drawable.shoppingmain)
     )
 
     LazyColumn(
@@ -86,23 +104,40 @@ fun CategoryList(modifier: Modifier = Modifier, navController: NavHostController
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(16.dp)
     ) {
-        items(categories) { category ->
+        items(categories) { (category, imageRes) ->
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    .height(200.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 onClick = { navController.navigate("recommendations/$category") }
             ) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Text(
-                        text = category,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Medium
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = category,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = category,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = MaterialTheme.colorScheme.surface,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
@@ -124,7 +159,17 @@ fun RecommendationsScreen(category: String, navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("$category Recommendations", fontWeight = FontWeight.Bold) },
+                title = { 
+                    Text(
+                        "$category",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
@@ -157,8 +202,10 @@ fun RecommendationsScreen(category: String, navController: NavHostController) {
                     ) {
                         Text(
                             text = recommendation,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
