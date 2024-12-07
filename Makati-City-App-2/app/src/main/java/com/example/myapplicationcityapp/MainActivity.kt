@@ -83,7 +83,7 @@ val allPlaceDetails = mapOf(
             longDescription = "Ani Cafe focuses on sustainability with a plant-based menu and ethically sourced coffee. A perfect destination for eco-conscious patrons.",
             address = "202 Legazpi St, Makati City",
             rating = 4.6f
-        )
+        ),
     ),
 
     "Restaurants" to mapOf(
@@ -173,49 +173,93 @@ val allPlaceDetails = mapOf(
     ),
 
     "Parks" to mapOf(
-        "Dreamlab Business Simulation" to PlaceDetails(
-            name = " ",
-            description = " ",
-            imageRes = R.drawable.dreamlab,
-            longDescription = " ",
-            address = " ",
+        "Jaime Velasquez Park" to PlaceDetails(
+            name = "Jaime Velasquez Park",
+            description = "Community park with lush greenery",
+            imageRes = R.drawable.jaime,
+            longDescription = "Known for its vibrant weekend markets and serene atmosphere, Jaime Velasquez Park is a popular spot for locals and visitors to enjoy leisurely strolls, picnics, and a variety of local crafts and food.",
+            address = "Tordesillas St, Salcedo Village, Makati City",
             rating = 4.5f
         ),
-        "Salcedo Village" to PlaceDetails(
-            name = "Salcedo Village",
-            description = " ",
-            imageRes = R.drawable.salcedo,
-            longDescription = " ",
-            address = "",
+        "Ayala Triangle Garden" to PlaceDetails(
+            name = "Ayala Triangle Garden",
+            description = "Urban oasis in the heart of Makati",
+            imageRes = R.drawable.ayala,
+            longDescription = "A spacious garden in Makati's business district, Ayala Triangle Garden offers a peaceful retreat with walking paths, manicured lawns, and seasonal light displays during holidays. It’s an excellent spot for outdoor relaxation.",
+            address = "Paseo de Roxas, Makati City",
             rating = 4.7f
         ),
-        "Fantasy World-One Ayala Makati" to PlaceDetails(
-            name = "Fantasy World-One Ayala Makati",
-            description = "",
-            imageRes = R.drawable.fantasy,
-            longDescription = "",
-            address = "",
+        "Washington Sycip Park" to PlaceDetails(
+            name = "Washington Sycip Park",
+            description = "Tranquil park with shaded pathways",
+            imageRes = R.drawable.washington,
+            longDescription = "A quiet retreat in the bustling city, Washington Sycip Park features shaded walkways, art installations, and ponds, providing a serene environment for those seeking a calm and reflective space.",
+            address = "Legazpi Village, Makati City",
             rating = 4.6f
         ),
-        "Kinder City-Makati" to PlaceDetails(
-            name = "Kinder City-Makati",
-            description = "",
-            imageRes = R.drawable.kindercity,
-            longDescription = "",
-            address = "",
+        "Circuit Makati" to PlaceDetails(
+            name = "Circuit Makati",
+            description = "Dynamic recreational area",
+            imageRes = R.drawable.circuit,
+            longDescription = "Circuit Makati is a vibrant area offering spaces for jogging, skateboarding, and outdoor events. Its modern facilities and lively atmosphere attract a diverse crowd, making it a hub for fitness and entertainment.",
+            address = "Hippodromo St, Circuit Makati, Makati City",
             rating = 4.8f
         ),
-        "Timezone Play N Learn" to PlaceDetails(
-            name = "Timezone Play N Learn",
-            description = "",
-            imageRes = R.drawable.timezone,
-            longDescription = " ",
-            address = " ",
+        "Rockwell Makati Lights Estrella Bridge" to PlaceDetails(
+            name = "Rockwell Makati Lights Estrella Bridge",
+            description = "Scenic illuminated bridge",
+            imageRes = R.drawable.rockwell,
+            longDescription = "A picturesque spot connecting Rockwell and Makati, the Estrella Bridge comes alive at night with stunning lights. It's a perfect location for romantic walks or casual evening outings.",
+            address = "Estrella St, Rockwell, Makati City",
             rating = 4.6f
         ),
     ),
 
-    // Add other category maps...
+
+    "Shopping Centers" to mapOf(
+        "Ayala Circuit Makati" to PlaceDetails(
+            name = "Ayala Circuit Makati",
+            description = "Modern shopping and entertainment hub",
+            imageRes = R.drawable.ayalacircuit,
+            longDescription = "Ayala Circuit Makati is a sprawling shopping and entertainment destination, featuring a mix of retail outlets, dining options, and leisure activities. Its open-air design creates a refreshing shopping experience.",
+            address = "Circuit Makati, Hippodromo St, Makati City",
+            rating = 4.5f
+        ),
+        "Greenbelt Makati" to PlaceDetails(
+            name = "Greenbelt Makati",
+            description = "Luxury shopping with garden views",
+            imageRes = R.drawable.greenbelt,
+            longDescription = "Greenbelt Makati offers a unique combination of high-end retail stores, fine dining establishments, and a serene garden setting. It’s a go-to destination for a premium shopping experience.",
+            address = "Esperanza St, Makati City",
+            rating = 4.7f
+        ),
+        "Glorietta" to PlaceDetails(
+            name = "Glorietta",
+            description = "Family-friendly shopping mall",
+            imageRes = R.drawable.glorietta,
+            longDescription = "Glorietta is a bustling shopping mall offering a wide range of retail outlets, casual dining options, and entertainment facilities. It's a perfect destination for families and casual shoppers.",
+            address = "Ayala Center, Makati City",
+            rating = 4.6f
+        ),
+        "One Ayala Mall" to PlaceDetails(
+            name = "One Ayala Mall",
+            description = "Innovative and stylish retail space",
+            imageRes = R.drawable.oneayala,
+            longDescription = "One Ayala Mall is the newest addition to Makati’s shopping landscape, showcasing modern architecture and a curated selection of retail and dining experiences. It's designed for style and convenience.",
+            address = "Makati Ave cor EDSA, Makati City",
+            rating = 4.8f
+        ),
+        "Rockwell Mall" to PlaceDetails(
+            name = "Rockwell Mall",
+            description = "High-end shopping and dining destination",
+            imageRes = R.drawable.rockwellmall,
+            longDescription = "Rockwell Mall, also known as Power Plant Mall, is a sophisticated shopping center with a curated selection of boutiques, top-notch restaurants, and entertainment facilities. It’s known for its luxurious ambiance.",
+            address = "Rockwell Center, Makati City",
+            rating = 4.6f
+        ),
+    ),
+
+
 )
 
 class MainActivity : ComponentActivity() {
@@ -366,6 +410,25 @@ fun RecommendationsScreen(category: String, navController: NavHostController) {
             Triple("Timezone Play N Learn", "Family-friendly arcade and play zone", R.drawable.timezone)
         )
 
+        "Parks" -> listOf(
+            Triple("Jaime Velasquez Park", "Community park with lush greenery", R.drawable.jaime),
+            Triple("Ayala Triangle Garden", "Urban oasis in the heart of Makati", R.drawable.ayala),
+            Triple("Washington Sycip Park", "Tranquil park with shaded pathways", R.drawable.washington),
+            Triple("Circuit Makati", "Dynamic recreational area", R.drawable.circuit),
+            Triple("Rockwell Makati Lights Estrella Bridge", "Scenic illuminated bridge", R.drawable.rockwell)
+        )
+
+        "Shopping Centers" -> listOf(
+            Triple("Ayala Circuit Makati", "Modern shopping and entertainment hub with open-air design", R.drawable.ayalacircuit),
+            Triple("Greenbelt Makati", "Luxury shopping and dining with serene garden views", R.drawable.greenbelt),
+            Triple("Glorietta", "Family-friendly mall with diverse retail and dining options", R.drawable.glorietta),
+            Triple("One Ayala Mall", "Innovative and stylish retail space with curated experiences", R.drawable.oneayala),
+            Triple("Rockwell Mall", "High-end shopping destination with premium dining and ambiance", R.drawable.rockwellmall)
+        )
+
+
+
+
         else -> emptyList()
     }
 
@@ -417,7 +480,7 @@ fun RecommendationsScreen(category: String, navController: NavHostController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            painter = painterResource(id = imageRes),
+                            painter = painterResource(id = imageRes as Int),
                             contentDescription = name,
                             modifier = Modifier
                                 .size(120.dp)
@@ -434,7 +497,9 @@ fun RecommendationsScreen(category: String, navController: NavHostController) {
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
+
                             Spacer(modifier = Modifier.height(4.dp))
+
                             Text(
                                 text = description,
                                 style = MaterialTheme.typography.bodyMedium,
