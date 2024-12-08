@@ -14,8 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.augment_ed.ui.theme.AugmentEDTheme
-import com.google.ar.core.examples.kotlin.libraryscan.LibraryScanActivity
-import kotlin.math.log
+import com.google.ar.core.examples.kotlin.helloar.ScanArActivity
 
 class LibraryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,8 +31,8 @@ class LibraryActivity : ComponentActivity() {
 fun LibraryScreen() {
     // List of 3D models mapped to their file paths
     val modelMap = listOf(
-        "Amphibian" to "librarymodel/model_6_-_marine_toad_on_leaf.glb",
-        "Heart" to "librarymodel/realistic_human_heart.glb"
+        "Amphibian" to "librarymodel/frog.glb",
+        "Heart" to "librarymodel/heart.glb"
     )
 
     LazyColumn(
@@ -52,10 +51,10 @@ fun ModelItem(modelName: String, modelPath: String) {
 
     Button(
         onClick = {
-            // Navigate to LibraryScanActivity with the selected model's path
-            val intent = Intent(context, LibraryScanActivity::class.java).apply {
+            // Navigate to com.google.ar.core.examples.kotlin.libraryscan.LibraryScanActivity with the selected model's path
+            val intent = Intent(context, ScanArActivity::class.java).apply {
                 putExtra("modelPath", modelPath) // Pass model path as an Intent extra
-                Log.d("LibraryScanActivity", "Received model path: $modelPath")
+                Log.d("com.google.ar.core.examples.kotlin.libraryscan.LibraryScanActivity", "Received model path: $modelPath")
             }
             context.startActivity(intent)
         },

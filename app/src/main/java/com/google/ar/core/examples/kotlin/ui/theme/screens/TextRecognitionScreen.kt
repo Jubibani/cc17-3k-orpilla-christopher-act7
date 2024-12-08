@@ -1,6 +1,7 @@
 package com.example.textrecognition
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
@@ -23,6 +24,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.delay
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -169,6 +171,7 @@ private class KeywordTextAnalyzer(
     }
 }
 
+@SuppressLint("ClickableViewAccessibility")
 private fun enableTapToFocus(previewView: PreviewView, cameraControl: CameraControl) {
     previewView.setOnTouchListener { _, event ->
         if (event.action == MotionEvent.ACTION_DOWN) {

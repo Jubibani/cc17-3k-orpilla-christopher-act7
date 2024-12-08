@@ -54,8 +54,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.augment_ed.ui.theme.AugmentEDTheme
 import com.example.textrecognition.RefinedTextRecognitionScreen
-import com.google.ar.core.examples.kotlin.helloar.HelloArActivity
+//import com.google.ar.core.examples.kotlin.helloar.HelloArActivity
 import com.google.ar.core.examples.kotlin.helloar.R
+import com.google.ar.core.examples.kotlin.helloar.ScanArActivity
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
@@ -175,7 +176,7 @@ fun MainScreen(
                         icon = Icons.Filled.QrCodeScanner,
                         onClick = {
                             // Start HelloAR activity (AR scanning)
-                            val intent = Intent(context, HelloArActivity::class.java)
+                            val intent = Intent(context, ScanArActivity::class.java)
                             context.startActivity(intent)
                         }
                     )
