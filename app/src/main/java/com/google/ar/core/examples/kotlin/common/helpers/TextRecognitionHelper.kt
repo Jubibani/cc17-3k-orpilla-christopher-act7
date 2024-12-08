@@ -7,7 +7,7 @@ import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 class TextRecognitionHelper {
-    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+     val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
     fun recognizeText(inputImage: InputImage, onResult: (Text) -> Unit) {
         recognizer.process(inputImage)

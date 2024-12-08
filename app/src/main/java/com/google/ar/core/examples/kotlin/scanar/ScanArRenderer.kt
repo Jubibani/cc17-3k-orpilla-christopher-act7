@@ -58,9 +58,11 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import android.media.Image
+
 
 /** Renders the HelloAR application using our example Renderer. */
-class HelloArRenderer(val activity: ScanArActivity) :
+class ScanArRenderer(val activity: ScanArActivity) :
     SampleRender.Renderer, DefaultLifecycleObserver {
     companion object {
         val TAG = "HelloArRenderer"
@@ -111,6 +113,8 @@ class HelloArRenderer(val activity: ScanArActivity) :
     lateinit var pointCloudMesh: Mesh
     lateinit var pointCloudShader: Shader
 
+    //TextRecognizer
+    private lateinit var textRecognizer: TextRecognizer
     // Keep track of the last point cloud rendered to avoid updating the VBO if point cloud
     // was not changed.  Do this using the timestamp since we can't compare PointCloud objects.
     var lastPointCloudTimestamp: Long = 0
@@ -159,6 +163,9 @@ class HelloArRenderer(val activity: ScanArActivity) :
 
     override fun onSurfaceCreated(render: SampleRender) {
 
+
+        //Initialize TextRecognizer
+        textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
         // Prepare the rendering objects.
         // This involves reading shaders and 3D model files, so may throw an IOException.
@@ -309,27 +316,13 @@ class HelloArRenderer(val activity: ScanArActivity) :
         val camera = frame.camera
 
 
-        // Attempt to acquire the camera image
+        // Process the frame for text recognition
         try {
             val image = frame.acquireCameraImage()
             image.use { // Ensure proper resource cleanup
                 val rotationDegrees = getRotationDegrees()
-                val inputImage = InputImage.fromMediaImage(it, rotationDegrees)
+                (activity as? ScanArActivity)?.processImageForTextRecognition(image, rotationDegrees)
 
-                // Initialize ML Kit TextRecognizer
-                val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-
-                textRecognizer.process(inputImage)
-                    .addOnSuccessListener { visionText ->
-                        // Display or log recognized text
-                        val recognizedText = visionText.text
-                        Log.d(TAG, "Recognized text: $recognizedText")
-                        (activity as? ScanArActivity)?.handleRecognizedText(recognizedText)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e(TAG, "Text recognition failed: ${e.localizedMessage}", e)
-                        (activity as? ScanArActivity)?.handleRecognizedText("Recognition failed.")
-                    }
             }
         } catch (e: NotYetAvailableException) {
             Log.w(TAG, "Camera image not available yet, skipping frame")
@@ -591,6 +584,8 @@ class HelloArRenderer(val activity: ScanArActivity) :
             activity.runOnUiThread { activity.view.showOcclusionDialogIfNeeded() }
         }
     }
+
+
 
     private fun showError(errorMessage: String) =
         activity.view.snackbarHelper.showError(activity, errorMessage)

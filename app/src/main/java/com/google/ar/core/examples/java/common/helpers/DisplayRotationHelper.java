@@ -33,12 +33,12 @@ import com.google.ar.core.Session;
  * events.
  */
 public final class DisplayRotationHelper implements DisplayListener {
-  private boolean viewportChanged;
-  private int viewportWidth;
-  private int viewportHeight;
-  private final Display display;
-  private final DisplayManager displayManager;
-  private final CameraManager cameraManager;
+  boolean viewportChanged;
+  int viewportWidth;
+  int viewportHeight;
+  public final Display display;
+  final DisplayManager displayManager;
+  final CameraManager cameraManager;
 
   /**
    * Constructs the DisplayRotationHelper but does not register the listener yet.
