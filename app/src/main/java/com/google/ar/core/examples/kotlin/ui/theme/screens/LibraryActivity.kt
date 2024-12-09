@@ -1,5 +1,6 @@
 package com.google.ar.core.examples.kotlin.ui.theme.screens
 
+import com.google.ar.core.examples.kotlin.scanar.ScanArActivity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.augment_ed.ui.theme.AugmentEDTheme
-import com.google.ar.core.examples.kotlin.helloar.ScanArActivity
 
 class LibraryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,8 +31,8 @@ class LibraryActivity : ComponentActivity() {
 fun LibraryScreen() {
     // List of 3D models mapped to their file paths
     val modelMap = listOf(
-        "Amphibian" to "librarymodel/frog.glb",
-        "Heart" to "librarymodel/heart.glb"
+        "Amphibian" to "library-model/frog.glb",
+        "Heart" to "library-model/heart.glb"
     )
 
     LazyColumn(

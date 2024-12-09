@@ -1,5 +1,6 @@
 package com.google.ar.core.examples.kotlin.ui.theme.screens
 
+import com.google.ar.core.examples.kotlin.scanar.ScanArActivity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -56,7 +57,6 @@ import com.example.augment_ed.ui.theme.AugmentEDTheme
 import com.example.textrecognition.RefinedTextRecognitionScreen
 //import com.google.ar.core.examples.kotlin.helloar.HelloArActivity
 import com.google.ar.core.examples.kotlin.helloar.R
-import com.google.ar.core.examples.kotlin.helloar.ScanArActivity
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 

@@ -1,203 +1,95 @@
-package com.google.ar.core.examples.kotlin.helloar;
-/*
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package com.google.ar.core.examples.kotlin.scanar;
 
-import ScanArView
 import android.media.Image
+import android.opengl.GLES20
+import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import com.google.ar.core.Config
-import com.google.ar.core.Config.InstantPlacementMode
-import com.google.ar.core.Session
+import com.google.ar.core.*
+import com.google.ar.core.exceptions.*
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper
-import com.google.ar.core.examples.java.common.helpers.DepthSettings
-import com.google.ar.core.examples.java.common.helpers.FullScreenHelper
-import com.google.ar.core.examples.java.common.helpers.InstantPlacementSettings
-import com.google.ar.core.examples.java.common.samplerender.SampleRender
-import com.google.ar.core.examples.kotlin.common.helpers.ARCoreSessionLifecycleHelper
-import com.google.ar.core.exceptions.CameraNotAvailableException
-import com.google.ar.core.exceptions.UnavailableApkTooOldException
-import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException
-import com.google.ar.core.exceptions.UnavailableSdkTooOldException
-import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException
-import com.google.ar.core.Frame
 import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper
-import com.google.common.util.concurrent.ListenableFuture
+import com.google.ar.core.examples.java.common.helpers.FullScreenHelper
+import com.google.ar.core.examples.java.common.samplerender.*
+import com.google.ar.core.examples.java.common.samplerender.Mesh
+import com.google.ar.core.examples.java.common.samplerender.arcore.BackgroundRenderer
+import com.google.ar.core.examples.kotlin.common.helpers.ARCoreSessionLifecycleHelper
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import androidx.camera.core.Preview
-import android.util.Size
-import androidx.camera.camera2.internal.annotation.CameraExecutor
-import androidx.camera.core.AspectRatio
-import java.util.Locale
-import androidx.camera.core.FocusMeteringAction
-import androidx.camera.core.Camera
-import androidx.camera.core.SurfaceOrientedMeteringPointFactory
-import com.google.mlkit.vision.text.TextRecognizer
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import com.google.ar.core.examples.java.common.samplerender.SampleRender
+import android.view.Surface
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.io.IOException
+import com.google.ar.core.examples.java.common.samplerender.Shader
 
-
-/**
- * This is a simple example that shows how to create an augmented reality (AR) application using the
- * ARCore API. The application will display any detected planes and will allow the user to tap on a
- * plane to place a 3D model.
- */
 class ScanArActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "HelloArActivity"
+        private const val TAG = "ScanArActivity"
     }
 
-    lateinit var arCoreSessionHelper: ARCoreSessionLifecycleHelper
-    lateinit var view: ScanArView
-    private lateinit var renderer: ScanArRenderer
-
-    val instantPlacementSettings = InstantPlacementSettings()
-    val depthSettings = DepthSettings()
-
-    //for process frames
-    private lateinit var displayRotationHelper: DisplayRotationHelper
+    private lateinit var arCoreSessionHelper: ARCoreSessionLifecycleHelper
+    private lateinit var renderer: Renderer
+    private lateinit var surfaceView: GLSurfaceView
     private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-    //refining text recognition
-    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-    private lateinit var imageAnalysis: ImageAnalysis
-    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var sampleRender: SampleRender
 
-    private var lastProcessingTime = 0L
-    private val processingInterval = 1000 // 1 second interval
-    
+    private val wordModelMap = mapOf(
+//        "amphibians" to "library-model/frog.obj",
+        "bacteria" to "library-model/bacteria.obj"
+//        "platypus" to "library-model/platypus.obj",
+//        "digestive" to "library-model/heart.obj",
+//        "expose" to "library-model/heart.obj"
+    )
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize the renderer and pass 'this' as the activity
-        renderer = ScanArRenderer(this)
-        // Setup ARCore session lifecycle helper and configuration.
+        if (!CameraPermissionHelper.hasCameraPermission(this)) {
+            CameraPermissionHelper.requestCameraPermission(this)
+            return
+        }
+
         arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)
-        // If Session creation or Session.resume() fails, display a message and log detailed
-        // information.
-        arCoreSessionHelper.exceptionCallback =
-            { exception ->
-                val message =
-                    when (exception) {
-                        is UnavailableUserDeclinedInstallationException ->
-                            "Please install Google Play Services for AR"
-                        is UnavailableApkTooOldException -> "Please update ARCore"
-                        is UnavailableSdkTooOldException -> "Please update this app"
-                        is UnavailableDeviceNotCompatibleException -> "This device does not support AR"
-                        is CameraNotAvailableException -> "Camera not available. Try restarting the app."
-                        else -> "Failed to create AR session: $exception"
-                    }
-                Log.e(TAG, "ARCore threw an exception", exception)
-                view.snackbarHelper.showError(this, message)
+        arCoreSessionHelper.exceptionCallback = { exception ->
+            val message = when (exception) {
+                is UnavailableArcoreNotInstalledException -> "Please install ARCore"
+                is UnavailableApkTooOldException -> "Please update ARCore"
+                is UnavailableSdkTooOldException -> "Please update this app"
+                is UnavailableDeviceNotCompatibleException -> "This device does not support AR"
+                else -> "Failed to create AR session: $exception"
             }
-        //
+            Log.e(TAG, "ARCore threw an exception", exception)
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
 
+        arCoreSessionHelper.beforeSessionResume = { session ->
+            session.configure(
+                session.config.apply {
+                    focusMode = Config.FocusMode.AUTO
+                    planeFindingMode = Config.PlaneFindingMode.HORIZONTAL
+                }
+            )
+        }
 
-        // Configure session features, including: Lighting Estimation, Depth mode, Instant Placement.
-        arCoreSessionHelper.beforeSessionResume = ::configureSession
         lifecycle.addObserver(arCoreSessionHelper)
 
-        // Set up the Hello AR renderer.
-        renderer = ScanArRenderer(this)
-        lifecycle.addObserver(renderer)
-
-        // Set up Hello AR UI.
-        view = ScanArView(this)
-        lifecycle.addObserver(view)
-        setContentView(view.root)
-
-        // Sets up an example renderer using our HelloARRenderer.
-        SampleRender(view.surfaceView, renderer, assets)
-
-        depthSettings.onCreate(this)
-        instantPlacementSettings.onCreate(this)
-
-        //for process frames
-        displayRotationHelper = DisplayRotationHelper(this)
-
-        //initialize camera
-        cameraExecutor = Executors.newSingleThreadExecutor()
-
-        //for refining text recognition
-        cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-            bindCameraUseCases(cameraProvider)
-        }, ContextCompat.getMainExecutor(this))
-
-
+        surfaceView = GLSurfaceView(this)
+        setContentView(surfaceView)
+        renderer = Renderer(this)
+        sampleRender = SampleRender(surfaceView, renderer, assets)
     }
 
-
-    /**
-     * Handle the recognized text and update the UI.
-     */
-
-    // Configure the session, using Lighting Estimation, and Depth mode.
-    fun configureSession(session: Session) {
-        session.configure(
-            session.config.apply {
-                lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
-
-                // Depth API is used if it is configured in Hello AR's settings.
-                depthMode =
-                    if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-                        Config.DepthMode.AUTOMATIC
-                    } else {
-                        Config.DepthMode.DISABLED
-                    }
-
-                // Instant Placement is used if it is configured in Hello AR's settings.
-                instantPlacementMode =
-                    if (instantPlacementSettings.isInstantPlacementEnabled) {
-                        InstantPlacementMode.LOCAL_Y_UP
-                    } else {
-                        InstantPlacementMode.DISABLED
-                    }
-            }
-        )
-    }
-
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        results: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, results: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, results)
         if (!CameraPermissionHelper.hasCameraPermission(this)) {
-            // Use toast instead of snackbar here since the activity will exit.
-            Toast.makeText(this, "Camera permission is needed to run this application", Toast.LENGTH_LONG)
-                .show()
+            Toast.makeText(this, "Camera permission is needed to run this application", Toast.LENGTH_LONG).show()
             if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
-                // Permission denied with checking "Do not ask again".
                 CameraPermissionHelper.launchPermissionSettings(this)
             }
             finish()
@@ -209,133 +101,147 @@ class ScanArActivity : AppCompatActivity() {
         FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus)
     }
 
+    inner class Renderer(val activity: ScanArActivity) : SampleRender.Renderer {
+        private lateinit var backgroundRenderer: BackgroundRenderer
+        private lateinit var virtualObjectShader: Shader
+        private val virtualObjectMeshes = mutableMapOf<String, Mesh>()
+        private val displayRotationHelper = DisplayRotationHelper(activity)
+        private var hasSetTextureNames = false
 
+        private var detectedWord: String? = null
+        private var anchorMatrix = FloatArray(16)
 
-    //processing frames for text recognition
-    private val targetWords = listOf("platypus", "bacteria", "digestive", "amphibian", "heart")
+        private lateinit var sampleRender: SampleRender
 
-    @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
-    fun processImageForTextRecognition(mediaImage: Image, rotationDegrees: Int) {
-        val image = InputImage.fromMediaImage(mediaImage, rotationDegrees)
-        textRecognizer.process(image)
-            .addOnSuccessListener { visionText ->
-                val recognizedText = visionText.text.lowercase(Locale.getDefault())
-                Log.d(TAG, "Recognized text: $recognizedText")
-                val detectedWords = targetWords.filter { it in recognizedText }
-                if (detectedWords.isNotEmpty()) {
-                    val message = "Detected: ${detectedWords.joinToString(", ")}"
-                    handleRecognizedText(message)
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Text recognition failed: ${e.localizedMessage}", e)
-            }
-    }
+        override fun onSurfaceCreated(render: SampleRender) {
+            sampleRender = render
+            GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f)
 
-
-    //Text Recognition
-    private var lastToastTime = 0L
-
-    private fun handleRecognizedText(text: String) {
-        runOnUiThread {
-            val textView = findViewById<TextView>(R.id.recognizedTextView)
-            textView.text = text
-            textView.visibility = View.VISIBLE
-
-            // Hide the TextView after 2 seconds
-            textView.postDelayed({ textView.visibility = View.GONE }, 2000)
-        }
-    }
-
-    //refining TextRecognition
-    private fun bindCameraUseCases(cameraProvider: ProcessCameraProvider) {
-        try {
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-            val preview = Preview.Builder().build()
-
-            imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1280, 720))
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-
-            imageAnalysis.setAnalyzer(cameraExecutor, TextRecognitionAnalyzer(targetWords) { recognizedText ->
-                val currentTime = System.currentTimeMillis()
-                if (currentTime - lastProcessingTime >= processingInterval) {
-                    handleRecognizedText(recognizedText)
-                    lastProcessingTime = currentTime
-                }
-            })
-
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                this as LifecycleOwner,
-                cameraSelector,
-                preview,
-                imageAnalysis
+            backgroundRenderer = BackgroundRenderer(sampleRender)
+            virtualObjectShader = Shader.createFromAssets(
+                sampleRender,
+                "shaders/ar_unlit_object.vert",
+                "shaders/ar_unlit_object.frag",
+                null
             )
 
-        } catch (exc: Exception) {
-            Log.e(TAG, "Use case binding failed", exc)
-        }
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-    }
-
-
-
-    private fun processRecognizedText(recognizedText: String) {
-        // Process the recognized text here
-        // You can call your existing processFrame method or implement new logic
-        val detectedWords = targetWords.filter { it in recognizedText.lowercase() }
-        if (detectedWords.isNotEmpty()) {
-            val message = "Detected: ${detectedWords.joinToString(", ")}"
-            handleRecognizedText(message)
-        }
-    }
-
-
-}
-
-//for refining text recognition
-private class TextRecognitionAnalyzer(
-    private val targetWords: List<String>,
-    private val onTextRecognized: (String) -> Unit
-) : ImageAnalysis.Analyzer {
-    private val textRecognizer: TextRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    private var lastProcessedTimestamp: Long = 0
-
-    @androidx.camera.core.ExperimentalGetImage
-    override fun analyze(imageProxy: ImageProxy) {
-        val currentTimestamp = System.currentTimeMillis()
-        if (currentTimestamp - lastProcessedTimestamp < 500) {
-            imageProxy.close()
-            return
+            wordModelMap.forEach { (word, modelPath) ->
+                try {
+                    virtualObjectMeshes[word] = Mesh.createFromAsset(sampleRender, modelPath)
+                } catch (e: IOException) {
+                    Log.e(TAG, "Error loading model for $word: ${e.localizedMessage}", e)
+                }
+            }
         }
 
-        val mediaImage = imageProxy.image
-        if (mediaImage != null) {
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-            textRecognizer.process(image)
-                .addOnSuccessListener { visionText ->
-                    val recognizedText = visionText.text.lowercase()
-                    val detectedWords = targetWords.filter { it in recognizedText }
-                    if (detectedWords.isNotEmpty()) {
-                        val message = "Detected: ${detectedWords.joinToString(", ")}"
-                        onTextRecognized(message)
+
+        override fun onSurfaceChanged(render: SampleRender, width: Int, height: Int) {
+            GLES20.glViewport(0, 0, width, height)
+            displayRotationHelper.onSurfaceChanged(width, height)
+        }
+
+        override fun onDrawFrame(render: SampleRender) {
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+
+            val session = activity.arCoreSessionHelper.session ?: return
+            displayRotationHelper.updateSessionIfNeeded(session)
+
+            try {
+                session.setCameraTextureName(backgroundRenderer.cameraColorTexture.textureId)
+                val frame = session.update()
+                backgroundRenderer.updateDisplayGeometry(frame)
+                backgroundRenderer.drawBackground(render)
+
+                // Perform text recognition
+                val image = frame.acquireCameraImage()
+                processImage(image)
+                image.close()
+
+                // Render AR objects
+                if (detectedWord != null) {
+                    val camera = frame.camera
+                    val projectionMatrix = FloatArray(16)
+                    camera.getProjectionMatrix(projectionMatrix, 0, 0.1f, 100.0f)
+                    val viewMatrix = FloatArray(16)
+                    camera.getViewMatrix(viewMatrix, 0)
+
+                    val mesh = virtualObjectMeshes[detectedWord]
+                    if (mesh != null) {
+                        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+                        GLES20.glDepthMask(true)
+                        virtualObjectShader.setMat4("u_ModelViewProjection", anchorMatrix)
+                        virtualObjectShader.setVec4("u_Color", floatArrayOf(1.0f, 0.0f, 0.0f, 1.0f))
+                        render.draw(mesh, virtualObjectShader)
                     }
-                    lastProcessedTimestamp = currentTimestamp
                 }
-                .addOnFailureListener { e ->
-                    Log.e("TextRecognitionAnalyzer", "Text recognition failed: ${e.message}", e)
+
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception on the OpenGL thread", e)
+            }
+        }
+        
+        @RequiresApi(Build.VERSION_CODES.R)
+        private fun getRotationDegrees(): Int {
+            val display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                display
+            } else {
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay
+            }
+
+            val rotation = display?.rotation ?: Surface.ROTATION_0
+            return when (rotation) {
+                Surface.ROTATION_0 -> 0
+                Surface.ROTATION_90 -> 90
+                Surface.ROTATION_180 -> 180
+                Surface.ROTATION_270 -> 270
+                else -> 0
+            }
+        }
+
+        private fun processImage(image: Image) {
+            try {
+                val buffer = image.planes[0].buffer
+                val rotationDegrees = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    getRotationDegrees()
+                } else {
+                    // For older versions, use a default value or implement a fallback method
+                    0
                 }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } else {
-            imageProxy.close()
+
+                val inputImage = InputImage.fromByteBuffer(
+                    buffer,
+                    image.width,
+                    image.height,
+                    rotationDegrees,
+                    InputImage.IMAGE_FORMAT_YUV_420_888 // Changed from NV21 to YUV_420_888
+                )
+
+                textRecognizer.process(inputImage)
+                    .addOnSuccessListener { visionText ->
+                        val detectedText = visionText.text.lowercase()
+                        for (word in wordModelMap.keys) {
+                            if (word in detectedText) {
+                                detectedWord = word
+                                activity.runOnUiThread {
+                                    Toast.makeText(activity, "Detected: $word", Toast.LENGTH_SHORT).show()
+                                }
+                                // Create an anchor at the center of the image
+                                val session = activity.arCoreSessionHelper.session
+                                val frame = session?.update()
+                                val pose = frame?.camera?.pose
+                                pose?.toMatrix(anchorMatrix, 0)
+                                break
+                            }
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Text recognition failed: ${e.localizedMessage}", e)
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error processing image: ${e.localizedMessage}", e)
+            }
         }
     }
 }

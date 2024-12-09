@@ -16,8 +16,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.google.ar.core.examples.kotlin.helloar">
+    xmlns:tools="http://schemas.android.com/tools">
 
   <uses-permission android:name="android.permission.CAMERA"/>
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
@@ -28,7 +27,7 @@
   <application
       android:allowBackup="false"
       android:icon="@drawable/splashscreen"
-      android:label="@string/app_name"
+      android:label="Augment-ED"
       android:theme="@style/Theme.AppCompat.NoActionBar"
       android:usesCleartextTraffic="false"
       tools:ignore="GoogleAppIndexingWarning">
@@ -61,15 +60,9 @@
       </intent-filter>
     </activity>
 
-    <!-- Hello AR Activity -->
-    <activity
-        android:name="com.google.ar.core.examples.kotlin.helloar.HelloArActivity"
-        android:exported="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar" />
-
     <!-- Scan Activity -->
     <activity
-        android:name="com.google.ar.core.examples.kotlin.helloar.ScanArActivity"
+        android:name="com.google.ar.core.examples.kotlin.scanar.ScanArActivity"
         android:exported="true"
         android:theme="@style/Theme.AppCompat.NoActionBar" />
 
